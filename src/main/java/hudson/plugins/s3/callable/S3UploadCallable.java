@@ -6,7 +6,6 @@ import hudson.plugins.s3.Destination;
 import hudson.plugins.s3.FingerprintRecord;
 import hudson.plugins.s3.MetadataPair;
 import hudson.remoting.VirtualChannel;
-import hudson.util.Secret;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,9 +28,9 @@ public class S3UploadCallable extends AbstractS3Callable implements FileCallable
     private final String selregion;
     private final boolean produced;
 
-    public S3UploadCallable(boolean produced, String accessKey, Secret secretKey, boolean useRole, Destination dest, List<MetadataPair> userMetadata, String storageClass,
+    public S3UploadCallable(boolean produced, AmazonS3Client client, Destination dest, List<MetadataPair> userMetadata, String storageClass,
             String selregion) {
-        super(accessKey, secretKey, useRole);
+        super(client);
         this.dest = dest;
         this.storageClass = storageClass;
         this.userMetadata = userMetadata;

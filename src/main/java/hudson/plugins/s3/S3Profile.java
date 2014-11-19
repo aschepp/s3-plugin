@@ -87,15 +87,35 @@ public class S3Profile {
         this.useRole = useRole;
     }
 
+    public String getProxyHost() {
+		return proxyHost;
+	}
+
+    public void setProxyHost(String proxyHost) {
+		this.proxyHost = proxyHost;
+	}
+
+    public String getProxyPort() {
+		return proxyPort;
+	}
+
+    public void setProxyPort(String proxyPort) {
+		this.proxyPort = proxyPort;
+	}
+
     public AmazonS3Client getClient() {
         if (client == null) {
-            if (useRole) {
-                client = new AmazonS3Client(getClientConfiguration());
-            } else {
-                client = new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey.getPlainText()), getClientConfiguration());
-            }
+            client = createClient();
         }
         return client;
+    }
+
+    private AmazonS3Client createClient() {
+        if (useRole) {
+            return new AmazonS3Client(getClientConfiguration());
+        } else {
+            return new AmazonS3Client(new BasicAWSCredentials(accessKey, secretKey.getPlainText()), getClientConfiguration());
+        }
     }
 
     private ClientConfiguration getClientConfiguration(){
@@ -130,7 +150,7 @@ public class S3Profile {
         }
 
         try {
-            S3UploadCallable callable = new S3UploadCallable(produced, accessKey, secretKey, useRole, dest, userMetadata, storageClass, selregion);
+            S3UploadCallable callable = new S3UploadCallable(produced, createClient(), dest, userMetadata, storageClass, selregion);
             if (uploadFromSlave) {
                 return filePath.act(callable);
             } else {
@@ -181,7 +201,7 @@ public class S3Profile {
                   Destination dest = Destination.newFromRun(build, artifact);
                   FilePath target = new FilePath(targetDir, artifact.getName());
                   try {
-                      fingerprints.add(target.act(new S3DownloadCallable(accessKey, secretKey, useRole, dest, console)));
+                      fingerprints.add(target.act(new S3DownloadCallable(createClient(), dest, console)));
                   } catch (IOException e) {
                       e.printStackTrace();
                   } catch (InterruptedException e) {

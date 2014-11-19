@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 
@@ -19,9 +20,9 @@ public class S3DownloadCallable extends AbstractS3Callable implements FileCallab
     final private Destination dest;
     final transient private PrintStream log;
     
-    public S3DownloadCallable(String accessKey, Secret secretKey, boolean useRole, Destination dest, PrintStream console) 
+    public S3DownloadCallable(AmazonS3Client client, Destination dest, PrintStream console) 
     {
-        super(accessKey, secretKey, useRole);
+        super(client);
         this.dest = dest;
         this.log = console;
     }
