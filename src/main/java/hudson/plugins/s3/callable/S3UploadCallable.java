@@ -15,7 +15,6 @@ import java.util.List;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.RegionUtils;
 import com.amazonaws.regions.Regions;
-import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.internal.Mimetypes;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectResult;
@@ -27,15 +26,17 @@ public class S3UploadCallable extends AbstractS3Callable implements FileCallable
     private final List<MetadataPair> userMetadata;
     private final String selregion;
     private final boolean produced;
+    private final boolean useServerSideEncryption;
 
     public S3UploadCallable(boolean produced, AmazonS3Client client, Destination dest, List<MetadataPair> userMetadata, String storageClass,
-            String selregion) {
+            String selregion, boolean useServerSideEncryption) {
         super(client);
         this.dest = dest;
         this.storageClass = storageClass;
         this.userMetadata = userMetadata;
         this.selregion = selregion;
         this.produced = produced;
+        this.useServerSideEncryption = useServerSideEncryption;
     }
 
     public ObjectMetadata buildMetadata(FilePath filePath) throws IOException, InterruptedException {
@@ -46,6 +47,10 @@ public class S3UploadCallable extends AbstractS3Callable implements FileCallable
         if ((storageClass != null) && !"".equals(storageClass)) {
             metadata.setHeader("x-amz-storage-class", storageClass);
         }
+        if (useServerSideEncryption) {
+            metadata.setServerSideEncryption(ObjectMetadata.AES_256_SERVER_SIDE_ENCRYPTION);	
+        }
+        	
         for (MetadataPair metadataPair : userMetadata) {
             metadata.addUserMetadata(metadataPair.key, metadataPair.value);
         }
